@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#define BUF_SIZE 1024;
+void error_handling(char *message);
+
+
+int main(int argc, char *argv[])
+{
+    int sock;
+    char message[BUF_SIZE];
+    int str_len, recv_len, recv_cnt;
+    struct sockaddr_in, serv_adr;
+
+    #the if statement validate the length the arguement.
+    if(argc !=3 ){
+        printf("Usage : %s <IP> <Port> ", argv[0]);
+        exit(1);
+    }
+
+    #socket output the integer format of socket
+    sock = socket(PF_INET, SOCKSTREAM, 0);
+    if(sock == -1)
+        error_handling("socket() error");
+
+    #initialization, all fields of the structure are zero
+    memset(&serv_adr, 0, sizeof(ser_adr));
+    serv_adr.sin_family=AF_INET;
+    //convert the IPV4 address into integer
+    serv_adr.sin_addr.s_addr=inet_addr(argv[1]);
+    //first convert string into integer and into the sequence of network
+    serv_adr.sin_port=htons(atoi(argv[2]));
+
+    #connection(beware of the conversion
+    if(connect(sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr)) == -1)
+        error_handling("Connect() error");
+    else
+        puts("Connected.......");
+
+    while(1){
+        fputs("Input message(Q to quit)", stdout);
+        fgets(message, BUF_SIZE, stdin);
+        if(!strcmp(message,"q\n") || !strcmp(message, "Q\n"))
+            break;
+
+        str_len = write(sock, message, strlen(message)):
+
+        recv_len = 0;
+        while(recv_len < str_len){
+            //the message[] receive the message
+            recv_cnt = read(sock, message[recv_len], BUF_SIZE - 1);
+            if(recv_cnt == -1){
+                error_handling("read() handling");
+            }
+            message[recv_len] = 0;
+            printf("Message from server %s", message);
+        }
+    close(sock);
+    return(0);
+}
+
+void error_handling(char *message){
+    fputs(message,stderr);
+    fputc('\n',stderr);
+    exit(1);
+}
