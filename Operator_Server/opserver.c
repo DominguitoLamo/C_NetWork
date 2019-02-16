@@ -40,6 +40,43 @@ int main(int argc, char *argv[]){
 
     for(i = 0; i < 5; i++){
         opnd_cnt = 0;
-        clnt_sock=accept(
+        clnt_sock=accept(serv_sock, (struct sockaddr*)&clnt_adr, &clnt_adr_sz);
+        read(clnt_sock, &opnd_cnt, 1);
+        
+        recv_len = 0;
+        while((opnd_cnt * OPSZ + 1)) > recv_len)
+        {
+            recv_cnt = read(clnt_sock, &opinfo[recv_len], BUF_SIZE - 1);
+            recv_len +=recv_cnt;
+        }
+        result = calculate(opnd_cnt, (int*)opinfo, opinfo[recv_len - 1]);
+        write(clnt_sock, (char*)&result, sizeof(result));
+        close(clnt_sock);
     }
+    close(serv_sock);
+    return 0;
+}
+
+int calculate(int opnum, int opnds[], char op)
+{
+    int result = opnd[0], i;
+    switch(op)
+    {
+        case '+':
+            for(i = 1; i <opnum; i++) result += opnds[i];
+            break;
+        case '-':
+            for(i = 1; i <opnum; i++) result -= opnds[i];
+            break;
+        case '*':
+            for(i = 1; i <opnum; i++) result *= opnds[i];
+            break;
+    }
+    return result;
+}
+
+void error_handling(char *message){
+    fputs(message, stderr);
+    fputc('\n', stderr);
+    exit(1);
 }
